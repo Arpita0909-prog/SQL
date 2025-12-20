@@ -4,10 +4,12 @@ const app = express();
 const port = 3001; 
 const db = require('./utils/db-connection');
 const usersRoutes = require('./routes/usersRoutes');
+const busesRoutes = require('./routes/busesRoutes');
 
 
 app.use(express.json());
 app.use('/users', usersRoutes);
+app.use('/buses', busesRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');

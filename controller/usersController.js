@@ -3,6 +3,11 @@ const db = require('../utils/db-connection');
 
 const addUsers = (req, res) => {
   const { name, email } = req.body;
+  
+if(name==undefined ||  email==undefined){
+    return res.status(400).send('Name and email are required');
+  }
+
   const insertQuery = 'INSERT INTO users (name, email) VALUES (?, ?)';
   db.execute(insertQuery, [name, email], (err, result) => {
     if (err) {
@@ -46,9 +51,20 @@ const deleteUsers = (req, res) => {
         res.status(200).send('User deleted successfully');
     });
 };
+const getUsers = (req, res) => {
+    const selectQuery = 'SELECT * FROM users';  
+    db.execute(selectQuery, (err, results) => {
+        if (err) {
+            console.error('Error fetching users:', err);
+            return res.status(500).send('Error fetching users');
+        }
+        res.status(200).json(results);
+    });
+}
 
 module.exports = {
   addUsers,
     updateUsers,
-    deleteUsers
+    deleteUsers,
+    getUsers
 };

@@ -1,5 +1,6 @@
 const db = require('../utils/db-connection');
 const users = require('../models/users');
+const { Op } = require('sequelize');
 
 const addBuses = async (req, res) => {
   try {
@@ -30,7 +31,7 @@ const updateBuses = async (req, res) => {
 const getBuses = async (req, res) => {
   try {
     const buses = await db.models.Bus.findAll();
-    res.json(buses);
+    res.status(200).json(buses);
   }
   catch (error) {
     res.status(500).json({ error: 'Failed to retrieve buses' });
@@ -39,8 +40,8 @@ const getBuses = async (req, res) => {
 
 const getBusesAvailable = async (req, res) => {   
   try {
-    const buses =  await db.models.Bus.findAll({ where: { available: true } });
-    res.json(buses);
+    const buses =  await db.models.Bus.findAll({ where: { availableSeats: { [Op.gt]: 10 } } });
+    res.status(200).json(buses);
   } catch (error) {
     res.status(500).json({ error: 'Failed to retrieve available buses' });
   } 

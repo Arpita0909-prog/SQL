@@ -1,61 +1,52 @@
 const db = require('../utils/db-connection');
+const users = require('../models/users');
 
-const addBuses = (req, res) => {
-  const { busNumber, totalSeats, availableSeats } = req.body;
-
-  if(busNumber==undefined || totalSeats==undefined || availableSeats==undefined){
-    return  res.status(400).send('busNumber, totalSeats and availableSeats are required');
+const addBuses = async (req, res) => {
+  try {
+    const { busNumber, totalSeats, availableSeats } = req.body;
+    const newBus = await db.models.Bus.create({ busNumber, totalSeats, availableSeats });
+    res.status(201).json(newBus);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add bus' });
   }
+};
 
-    const insertQuery = 'INSERT INTO buses (busNumber, totalSeats, availableSeats) VALUES (?, ?, ?)';   
-    db.execute(insertQuery, [busNumber, totalSeats, availableSeats], (err, result) => {
-    if (err) {
-      console.error('Error adding bus:', err);
-      return res.status(500).send('Error adding bus');
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(400).send('Bus not added');
-    }
-    
-    res.status(201).send('Bus added successfully');
-  });
-}
-const updateBuses = (req, res) => {
+const updateBuses = async (req, res) => {
+  try {
     const { id } = req.params;
     const { busNumber, totalSeats, availableSeats } = req.body;
-    const updateQuery = 'UPDATE buses SET busNumber = ?, totalSeats = ?, availableSeats = ? WHERE id = ?';  
-    db.execute(updateQuery, [busNumber, totalSeats, availableSeats, id], (err, result) => {
-        if (err) {
-            console.error('Error updating bus:', err);
-            return res.status(500).send('Error updating bus');
-        }
-        if (result.affectedRows === 0) {
-            return res.status(404).send('Bus not found');
-        }
-        res.status(200).send('Bus updated successfully');
-    });
-}
-getBuses = (req, res) => {
-    const selectQuery = 'SELECT * FROM buses';  
-    db.execute(selectQuery, (err, results) => {
-        if (err) {
-            console.error('Error fetching buses:', err);
-            return res.status(500).send('Error fetching buses');
-        } 
-        res.status(200).json(results);
-    }); 
+    const bus = await db.models.Bus.findByPk(id); 
+    if (bus) {
+      await bus.update({ busNumber, totalSeats, availableSeats });
+      res.json(bus);
+    } else {
+      res.status(404).json({ error: 'Bus not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update bus' });
+  }
 };
-getBusesAvailable = (req, res) => {
-    const selectQuery = 'SELECT * FROM buses WHERE availableSeats > 10';
-    db.execute(selectQuery, (err, results) => {
-        if (err) {
-            console.error('Error fetching buses:', err);
-            return res.status(500).send('Error fetching buses');
-        }
-        res.status(200).json(results);
-    });
+
+const getBuses = async (req, res) => {
+  try {
+    const buses = await db.models.Bus.findAll();
+    res.json(buses);
+  }
+  catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve buses' });
+  } 
 };
+
+const getBusesAvailable = async (req, res) => {   
+  try {
+    const buses =  await db.models.Bus.findAll({ where: { available: true } });
+    res.json(buses);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve available buses' });
+  } 
+};
+
+
 
 module.exports = {
   addBuses,

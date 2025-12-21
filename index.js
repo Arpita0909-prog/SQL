@@ -1,10 +1,11 @@
 const express = require('express');
-const mysql = require('mysql2');
 const app = express();
 const port = 3001; 
 const db = require('./utils/db-connection');
 const usersRoutes = require('./routes/usersRoutes');
 const busesRoutes = require('./routes/busesRoutes');
+const usersModel = require('./models/users');
+const busesModel = require('./models/buses');
 
 
 app.use(express.json());
@@ -14,11 +15,10 @@ app.use('/buses', busesRoutes);
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
-
-app.listen(port, (err) => {
-  if (err) {
-    console.error('Error starting the server:', err);
-    return;
-  }
-  console.log(`Server is running at http://localhost:${port}`);
+db.sync({force: false}).then(() => {
+  app.listen(port, () => {
+    console.log(`Server is running on http://localhost:${port}`);
+  }); 
+}).catch((error) => {
+  console.error('Unable to sync database:', error);
 });

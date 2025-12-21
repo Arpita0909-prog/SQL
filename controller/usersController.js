@@ -1,67 +1,55 @@
-
 const db = require('../utils/db-connection');
+const users = require('../models/users');
 
-const addUsers = (req, res) => {
-  const { name, email } = req.body;
-  
-if(name==undefined ||  email==undefined){
-    return res.status(400).send('Name and email are required');
+const addUsers = async (req, res) => {
+  try {
+    const { name, email } = req.body;   
+    const newUser = await db.models.User.create({ name, email });
+    res.status(201).json(newUser);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to add user' });
   }
-
-  const insertQuery = 'INSERT INTO users (name, email) VALUES (?, ?)';
-  db.execute(insertQuery, [name, email], (err, result) => {
-    if (err) {
-      console.error('Error adding user:', err);
-      return res.status(500).send('Error adding user');
-    }
-    if (result.affectedRows === 0) {
-      return res.status(400).send('User not added');
-    }
-    res.status(201).send('User added successfully');
-  });
 };
 
-const updateUsers = (req, res) => {
+const updateUsers = async (req, res) => { 
+  try {
     const { id } = req.params;
     const { name, email } = req.body;
-    const updateQuery = 'UPDATE users SET name = ?, email = ? WHERE id = ?';
-
-    db.execute(updateQuery, [name, email, id], (err, result) => {
-        if (err) {
-            console.error('Error updating user:', err);
-            return res.status(500).send('Error updating user');
-        }
-        if (result.affectedRows === 0) {
-            return res.status(404).send('User not found');
-        }
-        res.status(200).send('User updated successfully');
-    });
-}
-const deleteUsers = (req, res) => {
-    const { id } = req.params;
-    const deleteQuery = 'DELETE FROM users WHERE id = ?';   
-    db.execute(deleteQuery, [id], (err, result) => {
-        if (err) {
-            console.error('Error deleting user:', err);
-            return res.status(500).send('Error deleting user');
-        }
-        if (result.affectedRows === 0) {
-            return res.status(404).send('User not found');
-        }   
-        res.status(200).send('User deleted successfully');
-    });
+    const user = await db.models.User.findByPk(id);
+    if (user) {
+      await user.update({ name, email });
+      res.json(user);
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update user' });
+  }
 };
-const getUsers = (req, res) => {
-    const selectQuery = 'SELECT * FROM users';  
-    db.execute(selectQuery, (err, results) => {
-        if (err) {
-            console.error('Error fetching users:', err);
-            return res.status(500).send('Error fetching users');
-        }
-        res.status(200).json(results);
-    });
-}
 
+const deleteUsers = async (req, res) => { 
+  try {
+    const { id } = req.params;
+    const user = await db.models.User.findByPk(id);
+    if (user) {
+      await user.destroy();
+      res.json({ message: 'User deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+};
+
+const getUsers = async (req, res) => {
+  try {
+    const users = await db.models.User.findAll();
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to retrieve users' });
+  }
+};
 module.exports = {
   addUsers,
     updateUsers,

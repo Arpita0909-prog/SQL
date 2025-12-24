@@ -1,5 +1,8 @@
 const db = require('../utils/db-connection');
-const users = require('../models/users');
+const user = require('../models/users');
+const bookings = require('../models/bookings')
+const Bus= require('../models/buses');
+const { Op } = require('sequelize');
 
 const addUsers = async (req, res) => {
   try {
@@ -10,6 +13,7 @@ const addUsers = async (req, res) => {
     res.status(500).json({ error: 'Failed to add user' });
   }
 };
+
 
 const updateUsers = async (req, res) => { 
   try {
@@ -50,9 +54,28 @@ const getUsers = async (req, res) => {
     res.status(500).json({ error: 'Failed to retrieve users' });
   }
 };
+ const getUserBookings = async (req, res) => {
+  try {
+    const users = await db.models.User.findByPk(req.params.id, {
+      include: {
+        model: bookings,
+        include: Bus
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 module.exports = {
   addUsers,
     updateUsers,
     deleteUsers,
-    getUsers
+    getUsers,
+    getUserBookings
 };

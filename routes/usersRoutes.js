@@ -6,5 +6,6 @@ router.post("/add", userController.addUsers);
 router.put("/update/:id", userController.updateUsers);
 router.delete("/delete/:id", userController.deleteUsers);
 router.get("/get", userController.getUsers);
+router.get("/get/:id",userController.getUserBookings);
 
 module.exports = router;

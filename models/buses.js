@@ -20,3 +20,4 @@ const Bus = sequelize.define('Bus', {
     allowNull: false
   }
 });
+module.exports = Bus

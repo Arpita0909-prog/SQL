@@ -8,15 +8,17 @@ const usermodel = require('./models/users');
 const busmodel =  require('./models/buses');  
 const bookingmodel = require('./models/bookings');
 require('./models/association');
+const bookingRoutes = require('./routes/bookingsRoutes');
 
 app.use(express.json());
 app.use('/users', usersRoutes);
 app.use('/buses', busesRoutes);
+app.use('/bookings',bookingRoutes);
 
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });
-db.sync({force: true}).then(() => {
+db.sync({alter:true}).then(() => {
   app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
   }); 
